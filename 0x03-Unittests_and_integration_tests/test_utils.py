@@ -20,10 +20,11 @@ class TestAccessNestedMap(unittest.TestCase):
         """unit test for utils.access_nested_map"""
         res = access_nested_map(nested_map, path)
         self.assertEqual(res, expected)
-        
+
     @parameterized.expand([({}, ("a",)),
                            ({"a": 1}, ("a", "b"))])
-    def test_access_nested_map_exception(self, nested_map: Mapping, path: Sequence) -> None:
+    def test_access_nested_map_exception(self, nested_map: Mapping,
+                                         path: Sequence) -> None:
         """test that a KeyError is raised for the specific inputs"""
         with self.assertRaises(KeyError):
             access_nested_map(nested_map, path)
@@ -57,4 +58,3 @@ class TestMemoize(unittest.TestCase):
             test.a_property()
             test.a_property()
             mock_object.assert_called_once()
-    
