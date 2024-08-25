@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """0x03. Unittests and Integration Tests"""
 
-from utils import access_nested_map, get_json, memoize
+from utils import access_nested_map, memoize
 import unittest
 from unittest.mock import patch, Mock, PropertyMock
 from parameterized import parameterized
@@ -31,15 +31,22 @@ class TestGithubOrgClient(unittest.TestCase):
             result = test_class._public_repos_url
             self.assertEqual(result, payload["repos_url"])
 
-    @patch('get_json')
+    @patch('client.get_json')
     def test_public_repos(self, mock_get_json):
-        mock_get_json.return_value = {'payload': True}
-        with patch('GithubOrgClient._public_repos_url',
-                   new_callable=PropertyMock) as mock:
-            mock.return_value = 'chosen payload'
+        payload = [{"name": "Ahmed"}]
+        mock_get_json.return_value = payload
+
+        with patch('client.GithubOrgClient._public_repos_url',
+                   new_callable=PropertyMock) as mock_public:
+
+            mock_public.return_value = "hello world"
             test_class = GithubOrgClient('test')
             result = test_class.public_repos()
-            expected = {'payload': True}
+            expected = [item["name"] for item in payload]
             self.assertEqual(result, expected)
-            mock.assert_called_once()
+
+            mock_public.assert_called_once()
             mock_get_json.assert_called_once()
+
+# if __name__ == '__main__':
+#     unittest.main()
