@@ -19,7 +19,6 @@ class TestGithubOrgClient(unittest.TestCase):
     def test_org(self, org_name, mock):
         test_class = GithubOrgClient(org_name)
         test_class.org()
-        print(mock)
         mock.called_with_once(test_class.ORG_URL.format(org=input))
 
     def test_public_repos_url(self):
@@ -48,5 +47,18 @@ class TestGithubOrgClient(unittest.TestCase):
             mock_public.assert_called_once()
             mock_get_json.assert_called_once()
 
-# if __name__ == '__main__':
-#     unittest.main()
+    @parameterized.expand([
+        ({"license": {"key": "my_license"}}, "my_license"),
+        ({"license": {"key": "other_license"}}, "my_license")
+    ])
+    def test_has_license(self, repo, license_key):
+        test_class = GithubOrgClient('test')
+        result = test_class.has_license(repo, license_key)
+        expected = True if repo.get('license').get('key') == license_key\
+            else False
+        self.assertTrue(result, expected)
+
+
+
+if __name__ == '__main__':
+    unittest.main()
