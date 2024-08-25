@@ -48,17 +48,14 @@ class TestGithubOrgClient(unittest.TestCase):
             mock_get_json.assert_called_once()
 
     @parameterized.expand([
-        ({"license": {"key": "my_license"}}, "my_license"),
-        ({"license": {"key": "other_license"}}, "my_license")
+        ({"license": {"key": "my_license"}}, "my_license", True),
+        ({"license": {"key": "other_license"}}, "my_license", False)
     ])
-    def test_has_license(self, repo, license_key):
-        test_class = GithubOrgClient('test')
-        result = test_class.has_license(repo, license_key)
-        expected = True if repo.get('license').get('key') == license_key\
-            else False
+    def test_has_license(self, repo, license_key, expected):
+        result = GithubOrgClient.has_license(repo, license_key)
         self.assertTrue(result, expected)
 
 
 
-if __name__ == '__main__':
-    unittest.main()
+# if __name__ == '__main__':
+#     unittest.main()
