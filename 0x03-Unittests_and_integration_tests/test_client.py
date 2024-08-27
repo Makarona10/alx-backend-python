@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 """0x03. Unittests and Integration Tests"""
 
-from utils import access_nested_map, memoize
 import unittest
 from unittest.mock import patch, Mock, PropertyMock
-from parameterized import parameterized
-from typing import Mapping, Sequence
-import requests
+from parameterized import parameterized, parameterized_class
+from fixtures import TEST_PAYLOAD
 from client import GithubOrgClient
 
 
 class TestGithubOrgClient(unittest.TestCase):
-    
+
     @parameterized.expand([
         ('google'),
         ('abc')])
@@ -56,6 +54,45 @@ class TestGithubOrgClient(unittest.TestCase):
         self.assertEqual(result, expected)
 
 
+@parameterized_class(
+    ("org_payload", "repos_payload", "expected_repos", "apache2_repos"),
+    TEST_PAYLOAD
+)
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    """ Class - Integration test of fixtures """
+    @classmethod
+    def setUpClass(cls):
+        """method called before tests in an individual class are run"""
+        config = {'return_value.json.side_effect':
+                  [
+                      cls.org_payload, cls.repos_payload,
+                      cls.org_payload, cls.repos_payload
+                  ]
+                  }
+        cls.get_patcher = patch('requests.get', **config)
+        cls.mock = cls.get_patcher.start()
 
-# if __name__ == '__main__':
-#     unittest.main()
+    def test_public_repos(self):
+        """ Integration test: public repos"""
+        test_class = GithubOrgClient("google")
+
+        self.assertEqual(test_class.org, self.org_payload)
+        self.assertEqual(test_class.repos_payload, self.repos_payload)
+        self.assertEqual(test_class.public_repos(), self.expected_repos)
+        self.assertEqual(test_class.public_repos("XLICENSE"), [])
+        self.mock.assert_called()
+
+    def test_public_repos_with_license(self):
+        """ Integration test for public repos with License """
+        test_class = GithubOrgClient("google")
+
+        self.assertEqual(test_class.public_repos(), self.expected_repos)
+        self.assertEqual(test_class.public_repos("XLICENSE"), [])
+        self.assertEqual(test_class.public_repos(
+            "apache-2.0"), self.apache2_repos)
+        self.mock.assert_called()
+
+    @classmethod
+    def tearDownClass(cls):
+        """method called after tests in an individual class have run"""
+        cls.get_patcher.stop()
